@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+import rospy
+from sensor_msgs.msg import JointState
+import nep
+import time
+#!/usr/bin/env python
+import rospy
+from std_msgs.msg import String
+from geometry_msgs.msg import Wrench
+
+node = nep.node('rosnep_link')
+conf = node.hybrid('192.168.1.3')
+pubPosition = node.new_pub('UR5eJoints','json',conf)
+pubForce = node.new_pub('UR5eForce','json',conf)
+
+
+def callback(data):
+    #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
+    pubPosition.publish({"position":data.position})
+    
+def callbackForce(data):
+    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
+    pubForce.publish({"force":[data.force.x,data.force.y,data.force.z],"torque":[0.0,0.0,0.0] })
+    
+
+
+rospy.init_node('listener', anonymous=True)
+rospy.Subscriber("joint_states", JointState, callback)
+rospy.Subscriber('UR5eForce', Wrench,callbackForce)
+rospy.spin()
